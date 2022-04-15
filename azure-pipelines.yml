@@ -1,49 +1,88 @@
 # ASP.NET Core
+
 # Build and test ASP.NET Core projects targeting .NET Core.
 # Add steps that run tests, create a NuGet package, deploy, and more:
 # https://docs.microsoft.com/azure/devops/pipelines/languages/dotnet-core
 
 trigger:
 - none
-
+jobs:
+  - job: WebApp
+    displayName: 'Build Web App'
 pool:
   vmImage: 'windows-2019'
 
 variables:
   buildConfiguration: 'Release'
 
-steps:
-- task: UseDotNet@2
-  inputs:
-    packageType: 'sdk'
-    version: '6.0.x'
+  steps:
+    - task: UseDotNet@2
+      inputs:
+        packageType: 'sdk'
+        version: '6.0.x'
 
-- task: DotNetCoreCLI@2
-  inputs:
-    command: 'restore'
-    projects: '**/webapp.csproj'
-    feedsToUse: 'select'
+    - task: DotNetCoreCLI@2
+      inputs:
+        command: 'restore'
+        projects: '**/webapp.csproj'
+        feedsToUse: 'select'
 
-- task: DotNetCoreCLI@2
-  inputs:
-    command: 'build'
-    projects: '**/WebApp.csproj'
-    arguments: '--configuration $(buildConfiguration)'
+    - task: SonarCloudPrepare@1
+      inputs:
+        SonarCloud: 'sonarcloud'
+        organization: 'mysonarcube'
+        scannerMode: 'MSBuild'
+        projectKey: 'keyformysonarcube'
+        projectName: 'webdemo'
 
-- task: DotNetCoreCLI@2
-  inputs:
-    command: 'test'
-    projects: '**/*unitTest*.csproj'
-    arguments: '--configuration $(buildConfiguration)'
+    - task: DotNetCoreCLI@2
+      inputs:
+        command: 'build'
+        projects: '**/WebApp.csproj'
+        arguments: '--configuration $(buildConfiguration)'
 
-- task: DotNetCoreCLI@2
-  inputs:
-    command: 'publish'
-    publishWebProjects: true
-    arguments: '--configuration $(buildConfiguration) --output $(Build.ArtifactStagingDirectory)'
+    - task: DotNetCoreCLI@2
+      inputs:
+        command: 'test'
+        projects: '**/*unitTest*.csproj'
+        arguments: '--configuration $(buildConfiguration)'
 
-- task: PublishBuildArtifacts@1
-  inputs:
-    PathtoPublish: '$(Build.ArtifactStagingDirectory)'
-    ArtifactName: 'drop'
-    publishLocation: 'Container'
+    - task: DotNetCoreCLI@2
+      inputs:
+        command: 'publish'
+        publishWebProjects: true
+        arguments: '--configuration $(buildConfiguration) --output $(Build.ArtifactStagingDirectory)'
+
+    - task: SonarCloudAnalyze@1
+      displayName: 'Run Code Analysis'
+
+    - task: SonarCloudPublish@1
+      inputs:
+        pollingTimeoutSec: '60'
+
+    - task: PublishBuildArtifacts@1
+      inputs:
+        PathtoPublish: '$(Build.ArtifactStagingDirectory)'
+        ArtifactName: 'drop'
+        publishLocation: 'Container'
+
+
+    - job: database
+      displayName: 'Build Database'
+      pool:
+        vmImage: 'windows-2019'
+        
+      steps:
+       - task: MSBuild@1
+         inputs:
+           solution: 'WebApp.Database/WebApp.Database.sqlproj'
+           msbuildArguments: '/p:OutDir=$(Build.ArtifactStagingDirectory)'
+
+       - task: PublishBuildArtifacts@1
+         inputs:
+            PathtoPublish: '$(Build.ArtifactStagingDirectory)'
+            ArtifactName: 'dacpac'
+            publishLocation: 'Container'
+        
+    - job: sonarcube
+    
