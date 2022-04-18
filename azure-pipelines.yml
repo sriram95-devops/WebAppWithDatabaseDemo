@@ -43,11 +43,80 @@ jobs:
         inputs:
           command: 'test'
           projects: 'WebApp.UnitTest/WebApp.UnitTest.csproj'
-      
+          arguments: '--configuration $(BuildConfiguration)'
+        
+      - task: DotNetCoreCLI@2
+        inputs:
+          command: 'publish'
+          publishWebProjects: true
+          arguments: '--configuration $(BuildConfiguration) --output $(Build.ArtifactStagingDirectory)'
       - task: SonarCloudPublish@1
         inputs:
           pollingTimeoutSec: '300'
       
       - task: SonarCloudAnalyze@1
       
+      - task: PublishBuildArtifacts@1
+        inputs:
+          PathtoPublish: '$(Build.ArtifactStagingDirectory)'
+          ArtifactName: 'drop'
+          publishLocation: 'Container'
+        
+  - job: database
+    displayName: 'database'
+    pool:
+     vmImage: 'windows-2019' 
+    
+    steps:
+    - task: MSBuild@1
+      inputs:
+        solution: 'WebApp.Database/WebApp.Database.sqlproj'
+        configuration: '/p:outdir=$(Build.ArtifactStagingDirectory)'
+
+    
+    - task: PublishBuildArtifacts@1
+      inputs:
+        PathtoPublish: '$(Build.ArtifactStagingDirectory)'
+        ArtifactName: 'Dacpac'
+        publishLocation: 'Container'
+    
       
+  - job: ui-test
+    displayName: "unit-test"   
+    pool:
+     vmimage: 'windows-2019'
+    
+    steps:
+    - task: NuGetToolInstaller@1
+      inputs:
+        versionSpec: 
+    
+    - task: NuGetCommand@2
+      inputs:
+        command: 'restore'
+        restoreSolution: 'WebAppWithDatabase.sln'
+        feedsToUse: 'select'
+        
+    - task: MSBuild@1
+      inputs:
+        solution: 'SeleniumUiTests/SeleniumUiTests.csproj'
+        msbuildArguments: '/p:outdir=$(Build.ArtifactStagingDirectory)'
+    
+    - task: PublishBuildArtifacts@1
+      inputs:
+        PathtoPublish: '$(Build.ArtifactStagingDirectory)'
+        ArtifactName: 'unit-test'
+        publishLocation: 'Container'
+  
+  - job: infra
+    displayName: "infra"   
+    pool:
+     vmimage: 'windows-2019'
+    steps:
+      - task: CopyPublishBuildArtifacts@1
+        inputs:
+          CopyRoot: 'AzureResourceGroupDeployment/AzureResourceGroupDeployment.deployproj'
+          Contents: 'AzureResourceGroupDeployment.deployproj'
+          ArtifactName: 'infra'
+          ArtifactType: 'Container'
+    
