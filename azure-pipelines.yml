@@ -100,7 +100,7 @@ jobs:
       
       - task: MSBuild@1
         inputs:
-          solution: 'WebApp.UnitTest.csproj'
+          solution: 'WebApp.UnitTest/WebApp.UnitTest/'
           msbuildArguments: '/p:OutDir=$(Build.ArtifactStagingDirectory)'
         
       - task: PublishBuildArtifacts@1
