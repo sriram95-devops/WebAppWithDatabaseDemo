@@ -65,13 +65,12 @@ jobs:
         ArtifactName: 'drop'
         publishLocation: 'Container'
 
-
-    - job: database
-      displayName: 'Build Database'
-      pool:
+  - job: database
+    displayName: 'Build Database'
+    pool:
         vmImage: 'windows-2019'
         
-      steps:
+    steps:
        - task: MSBuild@1
          inputs:
            solution: 'WebApp.Database/WebApp.Database.sqlproj'
@@ -83,12 +82,12 @@ jobs:
             ArtifactName: 'dacpac'
             publishLocation: 'Container'
         
-    - job: Selenium
-      displayName: 'Build UI Tests'
-      pool:
+  - job: Selenium
+    displayName: 'Build UI Tests'
+    pool:
        vmImage: 'windows-2019'
   
-      steps:
+    steps:
       - task: NuGetToolInstaller@1
         inputs:
           versionSpec: 
@@ -110,12 +109,12 @@ jobs:
           ArtifactName: 'UI-Test'
           publishLocation: 'Container'
       
-      - job: Infrastructure
-        displayName: 'Copy Infrastructure files (ARM)'
-        pool:
-         vmImage: 'ubuntu-latest'
+  - job: Infrastructure
+    displayName: 'Copy Infrastructure files (ARM)'
+    pool:
+        vmImage: 'ubuntu-latest'
         steps:
-      - task: PublishBuildArtifacts@1
+        - task: PublishBuildArtifacts@1
         inputs:
           PathtoPublish: 'AzureResourceGroupDeployment'
           ArtifactName: 'arm'
