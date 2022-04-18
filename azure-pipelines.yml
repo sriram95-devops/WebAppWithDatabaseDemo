@@ -84,5 +84,40 @@ variables:
             ArtifactName: 'dacpac'
             publishLocation: 'Container'
         
-    - job: sonarcube
-    
+    - job: Selenium
+      displayName: 'Build UI Tests'
+  pool:
+    vmImage: 'windows-2019'
+  
+    steps:
+      - task: NuGetToolInstaller@1
+        inputs:
+          versionSpec: 
+      
+      - task: NuGetCommand@2
+        inputs:
+          command: 'restore'
+          restoreSolution: 'WebAppWithDatabase.sln'
+          feedsToUse: 'select'
+      
+      - task: MSBuild@1
+        inputs:
+          solution: 'WebApp.UnitTest.csproj'
+          msbuildArguments: '/p:OutDir=$(Build.ArtifactStagingDirectory)'
+        
+      - task: PublishBuildArtifacts@1
+        inputs:
+          PathtoPublish: '$(Build.ArtifactStagingDirectory)'
+          ArtifactName: 'UI-Test'
+          publishLocation: 'Container'
+      
+      - job: Infrastructure
+        displayName: 'Copy Infrastructure files (ARM)'
+    pool:
+     vmImage: 'ubuntu-latest'
+     steps:
+      - task: PublishBuildArtifacts@1
+        inputs:
+          PathtoPublish: 'AzureResourceGroupDeployment'
+          ArtifactName: 'arm'
+          publishLocation: 'Container'
