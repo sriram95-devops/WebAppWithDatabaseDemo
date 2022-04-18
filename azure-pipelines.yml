@@ -12,10 +12,10 @@ jobs:
     pool:
      vmImage: 'windows-2019'
 
-variables:
-  buildConfiguration: 'Release'
+    variables:
+     buildConfiguration: 'Release'
 
-  steps:
+    steps:
     - task: UseDotNet@2
       inputs:
         packageType: 'sdk'
