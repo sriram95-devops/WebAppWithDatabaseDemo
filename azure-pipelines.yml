@@ -113,9 +113,9 @@ variables:
       
       - job: Infrastructure
         displayName: 'Copy Infrastructure files (ARM)'
-    pool:
-     vmImage: 'ubuntu-latest'
-     steps:
+        pool:
+         vmImage: 'ubuntu-latest'
+        steps:
       - task: PublishBuildArtifacts@1
         inputs:
           PathtoPublish: 'AzureResourceGroupDeployment'
