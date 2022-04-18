@@ -15,3 +15,39 @@ jobs:
     variables:
      buildConfiguration: 'Release'
 
+    steps:
+      
+      - task: UseDotNet@2
+        inputs:
+          packageType: 'sdk'
+          version: '6.0.x'
+        
+      - task: SonarCloudPrepare@1
+        inputs:
+          SonarCloud: 'sonarcloud'
+          organization: 'mysonarcube'
+          scannerMode: 'MSBuild'
+          projectKey: 'keyformysonarcube'
+      
+      - task: DotNetCoreCLI@2
+        inputs:
+          command: 'restore'
+          projects: 'webapp/WebApp.csproj'
+ 
+      - task: DotNetCoreCLI@2
+        inputs:
+          command: 'build'
+          projects: 'webapp/WebApp.csproj'
+          arguments: '--configuration $(BuildConfiguration)'
+      - task: DotNetCoreCLI@2
+        inputs:
+          command: 'test'
+          projects: 'WebApp.UnitTest/WebApp.UnitTest.csproj'
+      
+      - task: SonarCloudPublish@1
+        inputs:
+          pollingTimeoutSec: '300'
+      
+      - task: SonarCloudAnalyze@1
+      
+      
