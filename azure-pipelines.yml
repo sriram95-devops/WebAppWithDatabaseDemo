@@ -82,7 +82,7 @@ jobs:
     
       
   - job: ui-test
-    displayName: 'unit-test'  
+    displayName: 'unit_test'  
     pool:
      vmimage: 'windows-2019'
     
