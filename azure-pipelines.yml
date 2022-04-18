@@ -86,10 +86,10 @@ variables:
         
     - job: Selenium
       displayName: 'Build UI Tests'
-  pool:
-    vmImage: 'windows-2019'
+      pool:
+       vmImage: 'windows-2019'
   
-    steps:
+      steps:
       - task: NuGetToolInstaller@1
         inputs:
           versionSpec: 
