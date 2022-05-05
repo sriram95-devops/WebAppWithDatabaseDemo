@@ -1,20 +1,33 @@
-using Microsoft.VisualStudio.TestTools.UnitTesting;
+using System.Numbers;
+using Xunit;
 
-namespace WebApp.UnitTest
+namespace XUnit.Coverlet
 {
-    [TestClass]
-    public class UnitTest1
+    public class PrimeServiceTests
     {
-        [TestMethod]
-        public void UnitTestShouldAlwaysWorkTest()
-        {
-            Assert.IsTrue(true);
-        }
+        readonly PrimeService _primeService;
 
-        [TestMethod]
-        public void OnePlusTwoEqualThreeTest()
-        {
-            Assert.IsTrue(true);
-        }
+        public PrimeServiceTests() => _primeService = new PrimeService();
+
+        [
+            Theory,
+            InlineData(-1), InlineData(0), InlineData(1)
+        ]
+        public void IsPrime_ValuesLessThan2_ReturnFalse(int value) =>
+            Assert.False(_primeService.IsPrime(value), $"{value} should not be prime");
+
+        [
+            Theory,
+            InlineData(2), InlineData(3), InlineData(5), InlineData(7)
+        ]
+        public void IsPrime_PrimesLessThan10_ReturnTrue(int value) =>
+            Assert.True(_primeService.IsPrime(value), $"{value} should be prime");
+
+        [
+            Theory,
+            InlineData(4), InlineData(6), InlineData(8), InlineData(9)
+        ]
+        public void IsPrime_NonPrimesLessThan10_ReturnFalse(int value) =>
+            Assert.False(_primeService.IsPrime(value), $"{value} should not be prime");
     }
 }
